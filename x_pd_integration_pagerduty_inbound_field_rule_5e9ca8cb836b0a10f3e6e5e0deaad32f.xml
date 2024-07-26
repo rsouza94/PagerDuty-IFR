@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<unload unload_date="2024-07-26 16:38:23">
+<x_pd_integration_pagerduty_inbound_field_rule action="INSERT_OR_UPDATE">
+<active>true</active>
+<data_type>string</data_type>
+<default_value/>
+<description>Get Agent From Payload and set on the Incident Caller Field </description>
+<event>trigger</event>
+<incident_table_name>incident</incident_table_name>
+<number>IFR001002</number>
+<order>100</order>
+<payload_field>agent</payload_field>
+<run_lookup_script>true</run_lookup_script>
+<script><![CDATA[var agent = value;
+agent.sys_id = false;
+
+var defaultUser = "8da6a843836b0a10f3e6e5e0deaad3a2"; //Please set the default sys_id should be set on the caller when the agent lookup didin`t retrieve any sys_id
+
+//check the payload if there`s a ID property
+if(agent.hasOwnProperty("id")){
+
+	//GlideRecord retrieve the agent SysID
+	var gUser = new GlideRecord("sys_user");
+	gUser.addQuery("x_pd_integration_pagerduty_id", agent.id);
+	gUser.query();
+	while(gUser.next()){
+		agent.sys_id = gUser.getValue("sys_id");
+	}
+
+	//Agent Sys ID Retrieved set the caller with the sys_id
+	if(agent.sys_id != false){
+		result = agent.sys_id;
+	//Agent SysID was not retrieved set the caller with the default sys id
+	}else{
+		result = defaultUser;
+	}
+}else{
+	//payload didn`t retrieve the agent ID
+	result = defaultUser;
+}]]></script>
+<sys_created_by>admin</sys_created_by>
+<sys_created_on>2024-07-26 15:06:05</sys_created_on>
+<sys_id>5e9ca8cb836b0a10f3e6e5e0deaad32f</sys_id>
+<sys_mod_count>23</sys_mod_count>
+<sys_updated_by>admin</sys_updated_by>
+<sys_updated_on>2024-07-26 16:24:12</sys_updated_on>
+<target_field>caller_id</target_field>
+<type>set_from_payload</type>
+</x_pd_integration_pagerduty_inbound_field_rule>
+</unload>
